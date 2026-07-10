@@ -34,9 +34,6 @@ Below is the directory map illustrating how files are structured:
 ├── diagrams/                          # Raw Mermaid specification diagrams
 │   ├── architecture.mmd               # System Architecture flowchart specs
 │   └── agent_flow.mmd                 # Ingestion & optimization sequence specs
-├── docs/                              # Project evaluation metrics & walkthroughs
-│   ├── evals_output.md                # Comparative MAE score reports
-│   └── walkthrough.md                 # System overview checklist walkthrough
 ├── scripts/                           # Dev and evaluation scripting utilities
 │   └── run_evals.ts                   # Cosine similarity vs. Cohere Reranking harness
 ├── tests/                             # Unit tests

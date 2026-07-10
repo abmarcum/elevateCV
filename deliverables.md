@@ -152,7 +152,7 @@ We implemented a full-stack Next.js web application:
 We created `scripts/run_evals.ts` and `/api/evaluate` to evaluate match accuracy. We constructed a dataset of **5 distinct Resumes** and **5 Job Descriptions** (totaling 25 candidate-job pairs) with human-provided fit ground truth scores.
 
 ### 2. Conclusions
-The evaluation confirmed that **Advanced Retrieval** (Contextual Chunking + LLM Reranking) significantly outperforms **Baseline Retrieval** (standard full-text cosine embedding similarity) in alignment with human ground truth, reducing match score errors by ~33%.
+The evaluation confirmed that **Advanced Retrieval** (Contextual Chunking + Cohere Reranking) significantly outperforms **Baseline Retrieval** (standard full-text cosine embedding similarity) in alignment with human ground truth, reducing match score errors by **~40%** (from 16.68 MAE down to 9.92 MAE).
 
 ---
 
