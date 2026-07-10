@@ -1,0 +1,24 @@
+flowchart TD
+    User([Job Seeker]) <--> UI[Next.js React Client UI]
+    UI <--> RouteUpload[API: /api/upload]
+    UI <--> RouteJobs[API: /api/jobs]
+    UI <--> RouteCurate[API: /api/curate]
+    UI <--> RouteCover[API: /api/cover-letter]
+    UI <--> RoutePrep[API: /api/interview-prep]
+    UI <--> RoutePath[API: /api/learning-path]
+    UI <--> RouteImport[API: /api/import-job]
+    
+    RouteUpload --> Parser[PDF-Parse & Mammoth Text Extractor]
+    Parser --> LLM_Extract[OpenAI GPT-4o-mini Profile Extractor]
+    
+    RouteJobs --> LLM_Query[OpenAI Query Generator]
+    LLM_Query --> Tavily[Tavily Search API]
+    Tavily --> LLM_Score[OpenAI Job Match Relevance Scorer]
+    
+    RouteCurate --> LLM_Optimizer[OpenAI ATS Curation Agent]
+    RouteCover --> LLM_Cover[OpenAI Cover Letter Agent]
+    RoutePrep --> LLM_Prep[OpenAI Interview Coach Agent]
+    RoutePath --> LLM_Path[OpenAI Learning Mentor Agent]
+    RouteImport --> Scraper[Server Fetch Scraper] --> LLM_Scrape[OpenAI Scraper Agent]
+    
+    UI --> Memory[(LocalStorage Session Memory)]

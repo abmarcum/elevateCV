@@ -1,0 +1,47 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant UI as Next.js Web UI
+    participant API as API Layer
+    participant LLM as OpenAI Agent
+    participant Web as Tavily Search
+    
+    User->>UI: Upload Resume (PDF/DOCX/TXT)
+    UI->>API: POST /api/upload (File Buffer)
+    API->>LLM: Ingest text & extract profile parameters
+    LLM-->>API: Structured JSON Profile
+    API-->>UI: Return parsed profile (Skills, Experience, Summary)
+    
+    User->>UI: Select Target/Exclude Domains & click "Find Matches"
+    UI->>API: POST /api/jobs (Profile + Domains)
+    API->>LLM: Generate domain-optimized search queries
+    LLM-->>API: Target query keywords
+    API->>Web: Search restricted domains (Include/Exclude Filters)
+    Web-->>API: Matching job postings
+    API->>LLM: Evaluate & rank matches
+    LLM-->>API: Structured matches JSON with fit scores
+    API-->>UI: Return matches list
+    
+    User->>UI: Select Job, choose Creativity Level & click "Tailor Resume"
+    UI->>API: POST /api/curate (Profile + Job + Preferences)
+    API->>LLM: ATS Score, Keyword Gaps, Bullet Rephrasings, tailored resume & cover letter
+    LLM-->>API: Optimization report JSON
+    UI->>User: Render side-by-side resume comparison & export formats
+    
+    User->>UI: Select cover letter tone dropdown
+    UI->>API: POST /api/cover-letter (Profile + Job + Tone)
+    API->>LLM: Generate custom tone letter
+    LLM-->>API: Clean cover letter text
+    UI->>User: Renders cover letter instantly
+    
+    User->>UI: Click "Generate Practice Q&A"
+    UI->>API: POST /api/interview-prep (Profile + Job)
+    API->>LLM: Formulate 3 behavioral & 2 technical Q&As
+    LLM-->>API: Structured Q&A JSON with Recruiter Rationale & STAR frameworks
+    UI->>User: Renders collapsible accordion items
+    
+    User->>UI: Click "Build Learning Path"
+    UI->>API: POST /api/learning-path (Keyword Gaps + Role)
+    API->>LLM: Formulate study topics, resources, estimate times & mini-projects
+    LLM-->>API: Structured roadmap JSON
+    UI->>User: Renders customized learning milestones
