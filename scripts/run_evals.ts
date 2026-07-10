@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import OpenAI from 'openai';
+import { CohereClient } from 'cohere-ai';
 
 // 1. Simple helper to parse and load .env manually (no external dotenv package required)
 function loadEnv() {
@@ -30,6 +31,12 @@ if (!openaiKey) {
 }
 
 const openai = new OpenAI({ apiKey: openaiKey });
+
+const cohereKey = process.env.COHERE_API_KEY;
+if (!cohereKey) {
+  console.warn('Warning: COHERE_API_KEY is not defined in environment variables. Cohere Rerank will fall back to cosine similarity.');
+}
+const cohere = cohereKey ? new CohereClient({ token: cohereKey }) : null;
 
 // 2. Define the evaluation dataset (5 resumes and 5 job descriptions)
 interface ResumeData {
@@ -234,25 +241,41 @@ async function evaluateBaseline(resume: ResumeData, job: JobData): Promise<numbe
   return score;
 }
 
-// 6. Advanced Retrieval Method (Contextual Chunking + LLM Reranking)
+// 6. Advanced Retrieval Method (Contextual Chunking + Cohere Reranking)
 async function evaluateAdvanced(resume: ResumeData, job: JobData): Promise<number> {
-  // A. Embed job description
-  const jobEmb = await getEmbedding(job.description);
+  let topChunks: string[] = [];
 
-  // B. Embed all resume chunks and retrieve top 3
-  const chunkScores = await Promise.all(
-    resume.chunks.map(async (chunk) => {
-      const chunkEmb = await getEmbedding(chunk);
-      return { chunk, similarity: cosineSimilarity(jobEmb, chunkEmb) };
-    })
-  );
+  // A. Try to retrieve and sort using Cohere Rerank API
+  if (cohere) {
+    try {
+      const response = await cohere.rerank({
+        model: 'rerank-v3.5',
+        query: job.description,
+        documents: resume.chunks,
+        topN: 3,
+      });
+      topChunks = response.results.map((result) => resume.chunks[result.index]);
+    } catch (error) {
+      console.warn('Cohere Rerank API call failed. Falling back to cosine similarity.', error);
+    }
+  }
 
-  const topChunks = chunkScores
-    .sort((a, b) => b.similarity - a.similarity)
-    .slice(0, 3)
-    .map((x) => x.chunk);
+  // B. Fallback to cosine similarity if cohere is not initialized or failed
+  if (topChunks.length === 0) {
+    const jobEmb = await getEmbedding(job.description);
+    const chunkScores = await Promise.all(
+      resume.chunks.map(async (chunk) => {
+        const chunkEmb = await getEmbedding(chunk);
+        return { chunk, similarity: cosineSimilarity(jobEmb, chunkEmb) };
+      })
+    );
+    topChunks = chunkScores
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, 3)
+      .map((x) => x.chunk);
+  }
 
-  // C. LLM-as-a-Judge Reranking using top retrieved contexts
+  // C. LLM-as-a-Judge Scoring using top retrieved contexts
   const rerankPrompt = `
 You are an expert technical recruiter. Evaluate how well this candidate matches the target job based ONLY on the retrieved resume sections.
 Target Job Title: ${job.title}
@@ -324,6 +347,11 @@ async function runEvals() {
       });
 
       console.log(`Evaluated Pair: ${r.name} x ${j.title} | GT: ${gt} | Baseline: ${baselineScore} | Advanced: ${advancedScore}`);
+
+      // Add a rate limit safety delay for Cohere Trial keys (10 requests/minute limit)
+      if (cohere) {
+        await new Promise((resolve) => setTimeout(resolve, 6100));
+      }
     }
   }
 
@@ -385,7 +413,7 @@ async function runEvals() {
   console.log('EVALUATION RESULTS SUMMARY');
   console.log('====================================================\n');
 
-  let markdownTable = `| Metric | Baseline (Full Embedding Cosine) | Advanced (Chunk RAG + LLM Reranking) |\n`;
+  let markdownTable = `| Metric | Baseline (Full Embedding Cosine) | Advanced (Chunk RAG + Cohere Reranking) |\n`;
   markdownTable += `| :--- | :---: | :---: |\n`;
   markdownTable += `| **Mean Absolute Error (MAE)** | ${baselineMae} score points | **${advancedMae}** score points (lower is better) |\n`;
   markdownTable += `| **Precision@1 (Best Job Accuracy)** | ${baselineP1}% | **${advancedP1}%** (higher is better) |\n`;

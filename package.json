@@ -10,6 +10,7 @@
     "test": "npx tsx tests/unit_tests.ts"
   },
   "dependencies": {
+    "cohere-ai": "^8.0.0",
     "langsmith": "^0.8.1",
     "lucide-react": "^1.24.0",
     "mammoth": "^1.12.0",

@@ -12,6 +12,7 @@ ElevateCV is a full-stack Next.js (TypeScript) application designed to help acti
 | **Styling** | Vanilla CSS | Custom animations, fonts, and dark glassmorphic design systems. |
 | **Ingestion Engine** | `pdf-parse`, `mammoth` | Text extraction from PDF, DOCX, and TXT files. |
 | **AI Optimizer** | OpenAI SDK (`gpt-4o-mini`) | Generates profile extractions, search terms, bullet point alignments, tone changes, STAR interview Q&As, and roadmaps. |
+| **Reranking Layer** | Cohere Rerank API (`rerank-v3.5`) | Performs high-accuracy contextual re-ranking of retrieved resume chunks against job requirements in the advanced retrieval benchmark. |
 | **Agentic Search** | Tavily Search API | Restricts or block portals from search matches utilizing inclusion and exclusion list arguments. |
 | **Telemetry & Log** | LangSmith SDK wrapper (`wrapOpenAI`) | Telemetry logging of LLM operations under the `elevateCV` workspace. |
 | **Testing & Execution** | Node.js native `node:assert`, `tsx` execute runner | Test suite assertions validating parsing, cleaning, and cosine math functions. |
@@ -23,6 +24,7 @@ ElevateCV is a full-stack Next.js (TypeScript) application designed to help acti
 Below is the directory map illustrating how files are structured:
 
 ```
+├── deliverables.md                    # Challenge answers report
 ├── README.md                          # Main documentation & architecture guides
 ├── package.json                       # Scripts (dev, build, test) and package dependencies
 ├── tsconfig.json                      # TypeScript configuration
@@ -33,11 +35,10 @@ Below is the directory map illustrating how files are structured:
 │   ├── architecture.mmd               # System Architecture flowchart specs
 │   └── agent_flow.mmd                 # Ingestion & optimization sequence specs
 ├── docs/                              # Project evaluation metrics & walkthroughs
-│   ├── SUBMISSION.md                  # Challenge answers report
 │   ├── evals_output.md                # Comparative MAE score reports
 │   └── walkthrough.md                 # System overview checklist walkthrough
 ├── scripts/                           # Dev and evaluation scripting utilities
-│   └── run_evals.ts                   # Cosine similarity vs. LLM Reranking harness
+│   └── run_evals.ts                   # Cosine similarity vs. Cohere Reranking harness
 ├── tests/                             # Unit tests
 │   └── unit_tests.ts                  # Assertions checking parsing and math math
 ├── src/
@@ -183,6 +184,7 @@ sequenceDiagram
     ```env
     OPENAI_API_KEY="your_openai_api_key_here"
     TAVILY_API_KEY="your_tavily_api_key_here"
+    COHERE_API_KEY="your_cohere_api_key_here"
 
     # LangSmith Tracing (Optional)
     LANGSMITH_TRACING=true
@@ -249,7 +251,7 @@ npm test
 ```
 
 ### Run Evaluation Harness
-Run the offline evaluation benchmark comparing Baseline (Full embedding cosine) vs. Advanced (Chunk RAG + LLM Reranking) over 25 test combinations:
+Run the offline evaluation benchmark comparing Baseline (Full embedding cosine) vs. Advanced (Chunk RAG + Cohere Reranking) over 25 test combinations:
 ```bash
 npx tsx scripts/run_evals.ts
 ```
