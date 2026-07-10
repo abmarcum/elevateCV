@@ -179,6 +179,7 @@ export default function Home() {
   const [outreachTone, setOutreachTone] = useState<'professional' | 'short_direct' | 'bold'>('professional');
   const [generatingOutreach, setGeneratingOutreach] = useState(false);
   const [copiedOutreach, setCopiedOutreach] = useState(false);
+  const [expandedExperience, setExpandedExperience] = useState<Record<number, boolean>>({});
 
   // Auto-save edited resume to session logs
   useEffect(() => {
@@ -1032,12 +1033,25 @@ export default function Home() {
                         <h5 className="text-sm font-semibold text-white leading-tight">{exp.role}</h5>
                         <p className="text-xs text-gray-400 mb-1">{exp.company} • {exp.duration}</p>
                         {exp.bullets && exp.bullets.length > 0 && (
-                          <ul className="text-xs text-gray-300 list-disc pl-4 space-y-1 mt-1.5 hidden md:block">
-                            {exp.bullets.slice(0, 2).map((b, i) => (
-                              <li key={i}>{b}</li>
-                            ))}
-                            {exp.bullets.length > 2 && <li className="text-gray-500 list-none italic">+{exp.bullets.length - 2} more bullets</li>}
-                          </ul>
+                          <div className="mt-1.5 hidden md:block">
+                            <ul className="text-xs text-gray-300 list-disc pl-4 space-y-1">
+                              {(expandedExperience[idx] ? exp.bullets : exp.bullets.slice(0, 2)).map((b, i) => (
+                                <li key={i}>{b}</li>
+                              ))}
+                            </ul>
+                            {exp.bullets.length > 2 && (
+                              <button
+                                onClick={() => setExpandedExperience(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                                className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold mt-1.5 flex items-center focus:outline-none transition-colors"
+                              >
+                                {expandedExperience[idx] ? (
+                                  <span>Collapse details ▲</span>
+                                ) : (
+                                  <span>Show {exp.bullets.length - 2} more bullets ▼</span>
+                                )}
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     ))}
