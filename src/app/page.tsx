@@ -263,8 +263,14 @@ export default function Home() {
       });
 
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Failed to parse resume');
+        let errMsg = 'Failed to parse resume';
+        try {
+          const errData = await res.json();
+          errMsg = errData.error || errMsg;
+        } catch {
+          errMsg = `Server error (${res.status}): ${res.statusText || 'Invalid response format'}`;
+        }
+        throw new Error(errMsg);
       }
 
       const data = await res.json();
@@ -588,8 +594,14 @@ export default function Home() {
       });
       
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Failed to import job details');
+        let errMsg = 'Failed to import job details';
+        try {
+          const errData = await res.json();
+          errMsg = errData.error || errMsg;
+        } catch {
+          errMsg = `Server error (${res.status}): ${res.statusText || 'Invalid response format'}`;
+        }
+        throw new Error(errMsg);
       }
       
       const data = await res.json();

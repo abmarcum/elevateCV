@@ -1,10 +1,5 @@
 import { PDFParse } from 'pdf-parse';
 import mammoth from 'mammoth';
-import path from 'path';
-
-// Configure absolute worker path to resolve server-side Next.js loader errors
-const workerPath = path.resolve(process.cwd(), 'node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs');
-PDFParse.setWorker(workerPath);
 
 export async function parseResumeFile(buffer: Buffer, mimeType: string): Promise<string> {
   if (mimeType === 'application/pdf') {
