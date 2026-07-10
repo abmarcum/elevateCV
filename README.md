@@ -156,15 +156,17 @@ sequenceDiagram
 | Feature | Capability | Interface Location |
 | :--- | :--- | :--- |
 | **Multi-Format Ingestion** | Support for parsing text from binary PDF, Word DOCX, and plain TXT files. | Applicant Tab / Drop Zone |
-| **Agentic Matching** | tavily-restricted query crawler generating relevant openings scored and sorted by AI. | Job Matcher Tab |
+| **Agentic Matching** | Tavily-restricted query crawler generating relevant openings scored and sorted by AI. | Job Matcher Tab |
 | **Manual & URL Import** | Scrapes external job pages using LLM text extraction to auto-populate descriptions. | Custom Job Panel |
+| **Real-Time ATS Tracker** | Progress bar indicating keyword alignment percentage, automatically checking off integrated skills in green. | Real-Time Tracker Panel |
+| **Interactive A4 Editor** | White paper sheet canvas rendering real-time edits from a side-by-side markdown text-editor. | Tailored Resume Section |
+| **Interactive Bullets** | Checkbox selectors to individually accept or reject rephrased experience statements, replacing text inline. | Experience Optimization |
 | **Tone Adjuster** | Selector to instantly regenerate cover letters in different styles (Friendly, Direct, Bold). | Cover Letter Area |
-| **Interactive Bullets** | Checkbox selectors to individually accept or reject rephrased experience statements. | Experience Optimization |
-| **A4 Preview Panel** | High-fidelity visual paper sheet representation updating in real-time. | Tailored Output Block |
+| **Outreach Generator** | API route drafting customized LinkedIn messages (under 300 char) or cold emails to recruiters. | Recruiter Outreach Block |
 | **AI Interview Coach** | Generates Recruiter Q&As with situational rationale and custom STAR responses. | AI Interview Trainer |
 | **Custom Learning Roadmap** | Actionable timeline indicating resources and project ideas to bridge keyword gaps. | Milestone Roadmap |
-| **Multi-Format Export** | Direct downloads as TXT, Word DOC, or styled PDF print layout. | Resume Footer |
-| **Session History** | Persists parsed applicants and tailored runs locally for instant retrieval. | Local History Logs |
+| **Multi-Format Export** | Direct downloads for Resumes & Cover Letters as TXT, Word DOC, or styled PDF layouts. | Actions Footers |
+| **Session History** | Auto-saves applicant profiles and tailored resume edits locally for instant retrieval. | Local History Logs |
 | **LangSmith Telemetry** | Captures prompts and telemetry under the `elevateCV` project. | LangSmith Workspace |
 
 ---

@@ -172,6 +172,31 @@ export default function Home() {
   const [copiedCoverLetter, setCopiedCoverLetter] = useState(false);
   const [historyList, setHistoryList] = useState<HistoryItem[]>([]);
 
+  // Premium Features States
+  const [editedMarkdown, setEditedMarkdown] = useState<string>('');
+  const [outreachText, setOutreachText] = useState<string>('');
+  const [outreachStyle, setOutreachStyle] = useState<'email' | 'linkedin'>('linkedin');
+  const [outreachTone, setOutreachTone] = useState<'professional' | 'short_direct' | 'bold'>('professional');
+  const [generatingOutreach, setGeneratingOutreach] = useState(false);
+  const [copiedOutreach, setCopiedOutreach] = useState(false);
+
+  // Auto-save edited resume to session logs
+  useEffect(() => {
+    if (historyList.length > 0 && editedMarkdown) {
+      const updated = [...historyList];
+      if (updated[0] && updated[0].curation) {
+        if (updated[0].curation.tailoredResume !== editedMarkdown) {
+          updated[0].curation = {
+            ...updated[0].curation,
+            tailoredResume: editedMarkdown
+          };
+          setHistoryList(updated);
+          localStorage.setItem('resume_tailor_history', JSON.stringify(updated));
+        }
+      }
+    }
+  }, [editedMarkdown]);
+
   // Load History from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('resume_tailor_history');
@@ -212,6 +237,8 @@ export default function Home() {
     setProfile(item.profile);
     if (item.curation) {
       setCurationResult(item.curation);
+      setEditedMarkdown(item.curation.tailoredResume);
+      setOutreachText('');
       
       const initialSelected: Record<number, boolean> = {};
       if (item.curation.bulletSuggestions) {
@@ -349,6 +376,8 @@ export default function Home() {
 
       const data = await res.json();
       setCurationResult(data);
+      setEditedMarkdown(data.tailoredResume);
+      setOutreachText('');
       
       const initialSelected: Record<number, boolean> = {};
       if (data.bulletSuggestions) {
@@ -580,6 +609,130 @@ export default function Home() {
     `;
     printWindow.document.write(html);
     printWindow.document.close();
+  };
+
+  const handleToggleBullet = (idx: number, checked: boolean) => {
+    setSelectedSuggestions(prev => {
+      const updated = {
+        ...prev,
+        [idx]: checked
+      };
+
+      if (curationResult) {
+        const sug = curationResult.bulletSuggestions[idx];
+        const targetText = checked ? sug.original : sug.suggested;
+        const replacementText = checked ? sug.suggested : sug.original;
+
+        setEditedMarkdown(current => {
+          if (current.includes(targetText)) {
+            return current.replace(targetText, replacementText);
+          }
+          // Fallback: regenerate base with all current toggles
+          let base = curationResult.tailoredResume;
+          curationResult.bulletSuggestions.forEach((s, i) => {
+            const isSel = i === idx ? checked : (i in updated ? updated[i] : true);
+            if (!isSel) {
+              base = base.replace(s.suggested, s.original);
+            }
+          });
+          return base;
+        });
+      }
+
+      return updated;
+    });
+  };
+
+  const getKeywordTrackerStatus = () => {
+    if (!curationResult) return { present: [], missing: [], percentage: 0 };
+    const resumeText = (editedMarkdown || '').toLowerCase();
+
+    const present: string[] = [];
+    const missing: string[] = [];
+
+    curationResult.keywordGaps.forEach(kw => {
+      const cleanKw = kw.toLowerCase().trim();
+      if (resumeText.includes(cleanKw)) {
+        present.push(kw);
+      } else {
+        missing.push(kw);
+      }
+    });
+
+    const total = curationResult.keywordGaps.length;
+    const percentage = total > 0 ? Math.round((present.length / total) * 100) : 100;
+
+    return { present, missing, percentage };
+  };
+
+  const printCoverLetter = (text: string) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    const html = `
+      <html>
+      <head>
+        <title>Tailored Cover Letter</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+          body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            padding: 50px 60px; 
+            color: #2d3748; 
+            line-height: 1.6; 
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 12px;
+          }
+          p { 
+            margin: 0 0 12px 0; 
+            white-space: pre-wrap;
+          }
+        </style>
+      </head>
+      <body>
+        <div style="font-size: 11px; color: #718096; margin-bottom: 25px; font-weight: 500;">
+          Date Generated: ${new Date().toLocaleDateString()}
+        </div>
+        <div>
+          ${text.split('\n').map(p => p.trim() ? `<p>${parseInlineStyles(p)}</p>` : '').join('')}
+        </div>
+        <script>
+          window.onload = function() { window.print(); window.close(); }
+        </script>
+      </body>
+      </html>
+    `;
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
+
+  const handleGenerateOutreach = async () => {
+    if (!profile || !selectedJob) return;
+    setGeneratingOutreach(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/outreach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profile,
+          jobTitle: selectedJob.title,
+          company: selectedJob.company,
+          style: outreachStyle,
+          tone: outreachTone
+        })
+      });
+      if (!res.ok) throw new Error('Failed to generate outreach pitch');
+      const data = await res.json();
+      setOutreachText(data.message);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Error generating outreach message.');
+    } finally {
+      setGeneratingOutreach(false);
+    }
   };
 
   const handleImportJobFromUrl = async () => {
@@ -1285,26 +1438,61 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* Keyword Gaps Section */}
-                      <div className="glass-panel p-6">
-                        <h4 className="text-sm font-bold text-white mb-3 flex items-center">
-                          <AlertCircle className="h-4 w-4 text-amber-500 mr-1.5" />
-                          Keyword & Skill Gaps Identified
-                        </h4>
-                        <p className="text-xs text-gray-400 mb-4">
-                          These keywords are highlighted in the job description but were missing or weak in your uploaded profile. They have been integrated into the tailored draft below.
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {curationResult.keywordGaps.map((keyword, i) => (
-                            <span key={i} className="text-xs px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
-                              + {keyword}
-                            </span>
-                          ))}
-                          {curationResult.keywordGaps.length === 0 && (
-                            <span className="text-xs text-gray-400 italic">No critical keyword gaps found! Exceptional resume alignment.</span>
-                          )}
-                        </div>
-                      </div>
+                      {/* Keyword Gaps & Real-Time ATS Tracker Section */}
+                      {(() => {
+                        const { present, missing, percentage } = getKeywordTrackerStatus();
+                        return (
+                          <div className="glass-panel p-6 space-y-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <div>
+                                <h4 className="text-sm font-bold text-white flex items-center">
+                                  <AlertCircle className="h-4 w-4 text-amber-500 mr-1.5" />
+                                  Real-Time Keyword & Skill Gap Tracker
+                                </h4>
+                                <p className="text-[10px] text-gray-400 mt-0.5">
+                                  Integrate missing skills into the editor below to dynamically optimize your match index.
+                                </p>
+                              </div>
+                              
+                              <div className="flex items-center space-x-2 bg-gray-900/60 py-1.5 px-3 rounded-xl border border-gray-800 shrink-0">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Keyword Alignment:</span>
+                                <span className={`text-xs font-mono font-bold ${
+                                  percentage >= 80 ? 'text-emerald-400' : percentage >= 50 ? 'text-amber-400' : 'text-red-400'
+                                }`}>
+                                  {percentage}%
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Alignment Progress Bar */}
+                            <div className="w-full bg-gray-900 rounded-full h-1.5 overflow-hidden border border-gray-800">
+                              <div 
+                                className={`h-full transition-all duration-500 ${
+                                  percentage >= 80 ? 'bg-emerald-500' : percentage >= 50 ? 'bg-amber-500' : 'bg-red-500'
+                                }`}
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {present.map((keyword, i) => (
+                                <span key={`pres-${i}`} className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium flex items-center">
+                                  <Check className="h-3 w-3 mr-1 shrink-0" />
+                                  {keyword}
+                                </span>
+                              ))}
+                              {missing.map((keyword, i) => (
+                                <span key={`miss-${i}`} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium flex items-center">
+                                  + {keyword}
+                                </span>
+                              ))}
+                              {curationResult.keywordGaps.length === 0 && (
+                                <span className="text-xs text-gray-400 italic">No critical keyword gaps found! Exceptional resume alignment.</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* Bullet Rephrasing Suggestions */}
                       <div className="glass-panel p-6">
@@ -1327,10 +1515,7 @@ export default function Home() {
                                     type="checkbox"
                                     id={`bullet-sug-${i}`}
                                     checked={selectedSuggestions[i] !== false}
-                                    onChange={(e) => setSelectedSuggestions({
-                                      ...selectedSuggestions,
-                                      [i]: e.target.checked
-                                    })}
+                                    onChange={(e) => handleToggleBullet(i, e.target.checked)}
                                     className="h-4 w-4 rounded border-gray-800 text-indigo-600 focus:ring-indigo-500 bg-gray-900 cursor-pointer"
                                   />
                                   <label htmlFor={`bullet-sug-${i}`} className="font-bold text-gray-300 text-[10px] cursor-pointer uppercase tracking-wider select-none">
@@ -1411,8 +1596,13 @@ export default function Home() {
                           </div>
                           
                           {resumePreviewMode === 'markdown' ? (
-                            <div className="bg-gray-950 p-4 rounded-xl border border-gray-900 max-h-[450px] overflow-y-auto font-mono text-xs">
-                              <pre className="whitespace-pre-wrap text-indigo-200">{getFinalResumeText()}</pre>
+                            <div className="bg-gray-950 p-2 rounded-xl border border-gray-900">
+                              <textarea
+                                value={editedMarkdown}
+                                onChange={(e) => setEditedMarkdown(e.target.value)}
+                                className="w-full h-[450px] bg-gray-950 text-indigo-200 font-mono text-xs p-4 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 border-none resize-none animate-fade-in"
+                                placeholder="Edit resume markdown here..."
+                              />
                             </div>
                           ) : (
                             <div className="bg-white p-8 rounded-xl shadow-2xl border border-gray-200 text-gray-800 overflow-y-auto max-h-[450px] select-text">
@@ -1430,7 +1620,7 @@ export default function Home() {
                                   .preview-resume li { margin-bottom: 2px; }
                                   .preview-resume strong { font-weight: 600; color: #1a202c; }
                                 `}</style>
-                                <div className="preview-resume" dangerouslySetInnerHTML={{ __html: convertMarkdownToHtmlForWord(getFinalResumeText()) }} />
+                                <div className="preview-resume" dangerouslySetInnerHTML={{ __html: convertMarkdownToHtmlForWord(editedMarkdown || getFinalResumeText()) }} />
                               </div>
                             </div>
                           )}
@@ -1439,19 +1629,19 @@ export default function Home() {
                           <div className="pt-2 border-t border-gray-900 flex flex-wrap items-center gap-2">
                             <span className="text-xs text-gray-400 mr-2">Download tailored resume as:</span>
                             <button
-                              onClick={() => downloadAsTxt(getFinalResumeText(), `${profile.name.replace(/\s+/g, '_')}_Tailored_Resume.txt`)}
+                              onClick={() => downloadAsTxt(editedMarkdown || getFinalResumeText(), `${profile.name.replace(/\s+/g, '_')}_Tailored_Resume.txt`)}
                               className="btn-secondary text-[11px] py-1.5 px-3"
                             >
                               TXT File
                             </button>
                             <button
-                              onClick={() => downloadAsDocx(getFinalResumeText(), `${profile.name.replace(/\s+/g, '_')}_Tailored_Resume.doc`)}
+                              onClick={() => downloadAsDocx(editedMarkdown || getFinalResumeText(), `${profile.name.replace(/\s+/g, '_')}_Tailored_Resume.doc`)}
                               className="btn-secondary text-[11px] py-1.5 px-3"
                             >
                               Word DOCX
                             </button>
                             <button
-                              onClick={() => printResume(getFinalResumeText())}
+                              onClick={() => printResume(editedMarkdown || getFinalResumeText())}
                               className="btn-primary text-[11px] py-1.5 px-3"
                             >
                               PDF / Print
@@ -1502,8 +1692,113 @@ export default function Home() {
                               <span>Regenerating cover letter in {coverTone} tone...</span>
                             </div>
                           ) : (
-                            <div className="bg-gray-950 p-6 rounded-xl border border-gray-900 max-h-[400px] overflow-y-auto font-sans text-sm leading-relaxed text-gray-200 whitespace-pre-wrap select-text">
-                              {curationResult.coverLetter}
+                            <div className="space-y-4">
+                              <div className="bg-gray-950 p-6 rounded-xl border border-gray-900 max-h-[400px] overflow-y-auto font-sans text-sm leading-relaxed text-gray-200 whitespace-pre-wrap select-text">
+                                {curationResult.coverLetter}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-gray-900">
+                                <span className="text-xs text-gray-400 mr-2">Download cover letter as:</span>
+                                <button
+                                  onClick={() => downloadAsTxt(curationResult.coverLetter, `${profile.name.replace(/\s+/g, '_')}_Tailored_CoverLetter.txt`)}
+                                  className="btn-secondary text-[11px] py-1.5 px-3"
+                                >
+                                  TXT File
+                                </button>
+                                <button
+                                  onClick={() => downloadAsDocx(curationResult.coverLetter, `${profile.name.replace(/\s+/g, '_')}_Tailored_CoverLetter.doc`)}
+                                  className="btn-secondary text-[11px] py-1.5 px-3"
+                                >
+                                  Word DOCX
+                                </button>
+                                <button
+                                  onClick={() => printCoverLetter(curationResult.coverLetter)}
+                                  className="btn-primary text-[11px] py-1.5 px-3"
+                                >
+                                  PDF / Print
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Recruiter Outreach Manager */}
+                        <div className="glass-panel p-6 space-y-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-900 pb-3">
+                            <div>
+                              <h4 className="text-sm font-bold text-white flex items-center">
+                                <Globe className="h-4 w-4 text-indigo-400 mr-1.5" />
+                                Recruiter Cold Outreach Generator
+                              </h4>
+                              <p className="text-[10px] text-gray-400 mt-0.5">
+                                Generate personalized outreach pitches for hiring managers
+                              </p>
+                            </div>
+                            
+                            {/* Format & Tone Selection */}
+                            <div className="flex flex-wrap items-center gap-2">
+                              <select
+                                value={outreachStyle}
+                                onChange={(e) => setOutreachStyle(e.target.value as any)}
+                                className="bg-gray-900 border border-gray-800 rounded-lg p-1.5 text-xs text-white focus:border-indigo-500 focus:outline-none cursor-pointer"
+                              >
+                                <option value="linkedin">LinkedIn Connection Request (300 char)</option>
+                                <option value="email">Cold Email Pitch</option>
+                              </select>
+                              
+                              <select
+                                value={outreachTone}
+                                onChange={(e) => setOutreachTone(e.target.value as any)}
+                                className="bg-gray-900 border border-gray-800 rounded-lg p-1.5 text-xs text-white focus:border-indigo-500 focus:outline-none cursor-pointer"
+                              >
+                                <option value="professional">Professional Tone</option>
+                                <option value="short_direct">Direct & Concise</option>
+                                <option value="bold">Confident & Bold</option>
+                              </select>
+
+                              <button
+                                onClick={handleGenerateOutreach}
+                                disabled={generatingOutreach}
+                                className="btn-primary text-xs py-1.5 px-3 disabled:opacity-50"
+                              >
+                                {generatingOutreach ? 'Generating...' : 'Generate Pitch'}
+                              </button>
+                            </div>
+                          </div>
+
+                          {generatingOutreach ? (
+                            <div className="bg-gray-950 p-6 rounded-xl border border-gray-900 text-xs text-gray-400 flex flex-col items-center justify-center space-y-2 h-[150px]">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500" />
+                              <span>Drafting your outreach pitch...</span>
+                            </div>
+                          ) : outreachText ? (
+                            <div className="space-y-3">
+                              <div className="bg-gray-950 p-6 rounded-xl border border-gray-900 max-h-[300px] overflow-y-auto font-sans text-sm leading-relaxed text-gray-200 whitespace-pre-wrap select-text">
+                                {outreachText}
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(outreachText);
+                                    setCopiedOutreach(true);
+                                    setTimeout(() => setCopiedOutreach(false), 2000);
+                                  }}
+                                  className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center space-x-1"
+                                >
+                                  {copiedOutreach ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                                  <span>{copiedOutreach ? 'Copied!' : 'Copy Pitch'}</span>
+                                </button>
+                                <span className="text-gray-600">|</span>
+                                <button
+                                  onClick={() => downloadAsTxt(outreachText, `${selectedJob.company.replace(/\s+/g, '_')}_Recruiter_Pitch.txt`)}
+                                  className="text-xs text-gray-400 hover:text-white"
+                                >
+                                  Download TXT
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="py-8 text-center text-gray-500 italic text-xs">
+                              Select format and click "Generate Pitch" to create recruiter outreach text.
                             </div>
                           )}
                         </div>

@@ -140,8 +140,8 @@ For our RAG pipeline, we chunk the resume into logical sections:
 
 We implemented a full-stack Next.js web application:
 *   **File Upload parsing**: Handled in `src/utils/parser.ts` using `pdf-parse` and `mammoth`.
-*   **API Routing**: Set up in `/api/upload`, `/api/jobs`, and `/api/curate` to orchestrate OpenAI prompts.
-*   **Interactive UI**: Programmed in `src/app/page.tsx` with full support for file drop, search results display, score rings, keyword gap display, bullet rephrasers, cover letter rendering, and local storage history.
+*   **API Routing**: Set up in `/api/upload`, `/api/jobs`, `/api/curate`, and `/api/outreach` to orchestrate OpenAI prompts and recruiter pitches.
+*   **Interactive UI**: Programmed in `src/app/page.tsx` with full support for file drop, search results display, score rings, an A4 Live Markdown Resume Editor with real-time preview, a real-time keyword alignment progress tracker, cover letter exports (TXT, Word, PDF), a recruiter outreach pitch composer, and local storage history auto-saving.
 *   **Styling**: Premium glassmorphism dark theme in `src/app/globals.css` with responsive dashboard flex layouts.
 
 ---
@@ -183,5 +183,3 @@ For Demo Day, we plan to keep:
 
 What we will change/improve:
 1.  **Vector DB integration**: Migrate the dynamic chunk matching from in-memory cosine array calculations to a vector database (like Supabase pgvector or Pinecone) to scale for large databases of pre-indexed jobs.
-2.  **Parser Enhancements**: Add support for parsing scanned resumes via OCR.
-3.  **PDF Export**: Allow downloading the tailored resume directly as a styled PDF.
