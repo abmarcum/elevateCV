@@ -1,4 +1,4 @@
-# Certification Challenge v1.0 Submission
+# Certification Challenge Submission
 
 **Project Name:** ElevateCV - Agentic Resume Curator & Job Matcher
 
