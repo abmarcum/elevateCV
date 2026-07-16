@@ -431,7 +431,7 @@ async function runEvals() {
   });
 
   // Write results to a file for easy submission loading
-  const outputFilePath = path.join(process.cwd(), 'docs', 'evals_output.md');
+  const outputFilePath = path.join(process.cwd(), 'tests', 'evals_output.md');
   
   let detailsTable = `### Detailed Breakdown\n\n`;
   detailsTable += `| Resume | Job Posting | Human Ground Truth | Baseline Score | Advanced Score | Error Difference (Base / Adv) |\n`;

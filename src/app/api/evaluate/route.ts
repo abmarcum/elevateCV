@@ -4,7 +4,7 @@ import path from 'path';
 
 export async function GET(request: NextRequest) {
   try {
-    const resultsFilePath = path.join(process.cwd(), 'docs', 'evals_output.md');
+    const resultsFilePath = path.join(process.cwd(), 'tests', 'evals_output.md');
     
     let markdown = '';
     if (fs.existsSync(resultsFilePath)) {
@@ -25,7 +25,7 @@ npx tsx scripts/run_evals.ts
       // Provide key hardcoded summary stats for UI mapping
       summary: {
         baselineMae: 16.7,
-        advancedMae: 9.7,
+        advancedMae: 10.1,
         baselineP1: 100,
         advancedP1: 100,
       }

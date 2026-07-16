@@ -36,8 +36,9 @@ Below is the directory map illustrating how files are structured:
 │   └── agent_flow.mmd                 # Ingestion & optimization sequence specs
 ├── scripts/                           # Dev and evaluation scripting utilities
 │   └── run_evals.ts                   # Cosine similarity vs. Cohere Reranking harness
-├── tests/                             # Unit tests
-│   └── unit_tests.ts                  # Assertions checking parsing and math math
+├── tests/                             # Unit tests & evaluations
+│   ├── unit_tests.ts                  # Assertions checking parsing and math math
+│   └── evals_output.md                # Comparative MAE score reports
 ├── src/
 │   ├── app/                           # Next.js Pages and routes
 │   │   ├── page.tsx                   # Main React entrypoint & responsive dashboard UI
@@ -254,4 +255,4 @@ Run the offline evaluation benchmark comparing Baseline (Full embedding cosine) 
 ```bash
 npx tsx scripts/run_evals.ts
 ```
-Results will print a performance breakdown table and save it to `docs/evals_output.md`.
+Results will print a performance breakdown table and save it to `tests/evals_output.md`.
