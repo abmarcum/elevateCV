@@ -2,6 +2,8 @@
 
 ElevateCV is a full-stack Next.js (TypeScript) application designed to help active job seekers parse their resumes, search for matching job postings agentically using Tavily, analyze keyword gaps, customize bullet points, and draft tailored cover letters.
 
+![ElevateCV User Interface Dashboard](diagrams/elevateCV-ui.jpg)
+
 ---
 
 ## 🛠️ Technology Stack
