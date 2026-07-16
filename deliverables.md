@@ -1,7 +1,8 @@
 # Certification Challenge v1.0 Submission
 
-**Applicant Repo:** https://github.com/abmarcum/elevateCV    
 **Project Name:** ElevateCV - Agentic Resume Curator & Job Matcher
+**Applicant Repo:** https://github.com/abmarcum/elevateCV
+**Deployment URL:** https://elevatecv.bogosity.org
 **Date:** July 16, 2026
 
 ---
