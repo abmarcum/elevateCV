@@ -60,7 +60,7 @@ Below is the directory map illustrating how files are structured:
 
 ## 🏗️ System Architecture
 
-*   Raw specification file: [diagrams/architecture.mmd](file:///Users/andrew/ai-workspace/code/AEIC1/Certification_Challenge/diagrams/architecture.mmd)
+*   Raw specification file: [diagrams/architecture.mmd](diagrams/architecture.mmd)
 
 The following diagram illustrates the relationship between the Next.js frontend, backend API routes, the parsing engine, Tavily Search API, and OpenAI's GPT-4o-mini LLM:
 
@@ -95,7 +95,7 @@ flowchart TD
 
 ## 🚢 Agentic Curation Flow
 
-*   Raw specification file: [diagrams/agent_flow.mmd](file:///Users/andrew/ai-workspace/code/AEIC1/Certification_Challenge/diagrams/agent_flow.mmd)
+*   Raw specification file: [diagrams/agent_flow.mmd](diagrams/agent_flow.mmd)
 
 The sequential flow below shows how user actions trigger agent behaviors from ingestion to matching and optimization:
 
@@ -210,7 +210,7 @@ As a Next.js application, ElevateCV is fully compatible with [Vercel](https://ve
 1. Push your codebase to a Git repository (GitHub, GitLab, or Bitbucket).
 2. Sign in to the [Vercel Dashboard](https://vercel.com).
 3. Click **Add New** -> **Project** and import your Git repository.
-4. Under the **Environment Variables** section, copy the environment variables from your local [.env](file:///Users/andrew/ai-workspace/code/elevateCV/.env) or [.env.example](file:///Users/andrew/ai-workspace/code/elevateCV/.env.example):
+4. Under the **Environment Variables** section, copy the environment variables from your local [.env](.env) or [.env.example](.env.example):
    - `OPENAI_API_KEY`: Your OpenAI API Key.
    - `TAVILY_API_KEY`: Your Tavily Search API Key.
    - *(Optional)* `LANGSMITH_TRACING`, `LANGSMITH_API_KEY`, and `LANGSMITH_PROJECT` if telemetry is active.

@@ -1,8 +1,8 @@
 # Certification Challenge v1.0 Submission
 
-**Applicant Workspace:** `/Users/andrew/ai-workspace/code/AEIC1/Certification_Challenge`
+**Applicant Repo:** https://github.com/abmarcum/elevateCV    
 **Project Name:** ElevateCV - Agentic Resume Curator & Job Matcher
-**Date:** July 9, 2026
+**Date:** July 16, 2026
 
 ---
 
@@ -152,7 +152,7 @@ We implemented a full-stack Next.js web application:
 We created `scripts/run_evals.ts` and `/api/evaluate` to evaluate match accuracy. We constructed a dataset of **5 distinct Resumes** and **5 Job Descriptions** (totaling 25 candidate-job pairs) with human-provided fit ground truth scores.
 
 ### 2. Conclusions
-The evaluation confirmed that **Advanced Retrieval** (Contextual Chunking + Cohere Reranking) significantly outperforms **Baseline Retrieval** (standard full-text cosine embedding similarity) in alignment with human ground truth, reducing match score errors by **~40%** (from 16.68 MAE down to 9.92 MAE).
+The evaluation confirmed that **Advanced Retrieval** (Contextual Chunking + Cohere Reranking) significantly outperforms **Baseline Retrieval** (standard full-text cosine embedding similarity) in alignment with human ground truth, reducing match score errors by **~42%** (from 16.68 MAE down to 9.72 MAE).
 
 ---
 
@@ -165,12 +165,12 @@ We implemented **Contextual Chunking with Cohere Reranking** as our advanced ret
 
 | Metric | Baseline (Full Embedding Cosine) | Advanced (Chunk RAG + Cohere Reranking) |
 | :--- | :---: | :---: |
-| **Mean Absolute Error (MAE)** | 16.68 score points | **9.92** score points (lower is better) |
+| **Mean Absolute Error (MAE)** | 16.68 score points | **9.72** score points (lower is better) |
 | **Precision@1 (Best Job Accuracy)** | 100% | **100%** (higher is better) |
-| **Avg Processing Time per Pair** | 587 ms | 1081 ms |
+| **Avg Processing Time per Pair** | 726 ms | 908 ms |
 
 ### 3. Analysis & Key Takeaways
-The Advanced method using Cohere Rerank achieved a stellar **9.92 MAE**, which is a significant improvement over the baseline (16.68) and outperforms prompt-based LLM-as-a-judge context ranking (which scored 11.12). Cohere Rerank provides extremely precise semantic alignment scores between the job description and candidate resume chunks, allowing the final scorer to accurately assess gaps. For example, it successfully zeroed out invalid match scores (e.g. scoring Alice Dev 0% on Machine Learning compared to the baseline's overconfident 44%).
+The Advanced method using Cohere Rerank achieved a stellar **9.72 MAE**, which is a significant improvement over the baseline (16.68) and outperforms prompt-based LLM-as-a-judge context ranking (which scored 11.12). Cohere Rerank provides extremely precise semantic alignment scores between the job description and candidate resume chunks, allowing the final scorer to accurately assess gaps. For example, it successfully zeroed out invalid match scores (e.g. scoring Alice Dev 0% on Machine Learning compared to the baseline's overconfident 44%).
 
 ---
 

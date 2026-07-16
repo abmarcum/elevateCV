@@ -432,9 +432,19 @@ async function runEvals() {
 
   // Write results to a file for easy submission loading
   const outputFilePath = path.join(process.cwd(), 'docs', 'evals_output.md');
-  const summaryContent = `# RAG Evaluation Results\n\n${markdownTable}\n\n*Generated on: ${new Date().toISOString()}*`;
-  fs.writeFileSync(outputFilePath, summaryContent);
-  console.log(`\nSaved evaluation summary table to ${outputFilePath}`);
+  
+  let detailsTable = `### Detailed Breakdown\n\n`;
+  detailsTable += `| Resume | Job Posting | Human Ground Truth | Baseline Score | Advanced Score | Error Difference (Base / Adv) |\n`;
+  detailsTable += `| :--- | :--- | :---: | :---: | :---: | :---: |\n`;
+  results.forEach((row) => {
+    const baseDiff = Math.abs(row.baselineScore - row.groundTruth);
+    const advDiff = Math.abs(row.advancedScore - row.groundTruth);
+    detailsTable += `| ${row.resumeName} | ${row.jobTitle} | ${row.groundTruth} | ${row.baselineScore} | ${row.advancedScore} | ${baseDiff} / ${advDiff} |\n`;
+  });
+
+  const fullContent = `# RAG Evaluation Results\n\n${markdownTable}\n\n${detailsTable}\n\n*Generated on: ${new Date().toISOString()}*`;
+  fs.writeFileSync(outputFilePath, fullContent);
+  console.log(`\nSaved evaluation summary and detailed breakdown to ${outputFilePath}`);
 }
 
 runEvals().catch(err => console.error(err));

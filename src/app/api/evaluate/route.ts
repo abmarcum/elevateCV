@@ -25,7 +25,7 @@ npx tsx scripts/run_evals.ts
       // Provide key hardcoded summary stats for UI mapping
       summary: {
         baselineMae: 16.7,
-        advancedMae: 9.9,
+        advancedMae: 9.7,
         baselineP1: 100,
         advancedP1: 100,
       }
