@@ -12,15 +12,15 @@
 
 # Task 1: Defining Problem, Audience, and Scope
 
-### 1. Succinct 1-Sentence Problem Description
+### 1. Problem Description
 Job seekers struggle to customize their resumes and cover letters for diverse applicant tracking systems (ATS) and job requirements, leading to extremely low interview call-back rates due to keyword mismatch and misaligned experiences.
 
-### 2. User Analysis (1-2 Paragraphs)
+### 2. User Analysis
 Our target audience consists of active job seekers, tech professionals, and career switchers who apply to multiple positions online. Today, when applying for a job, these individuals must open the job posting and their resume side-by-side, manually scan the posting to guess which keywords are most important, and then painstakingly re-phrase their bullet points in a word processor to emphasize relevant experience.
 
 This manual approach is slow, repetitive, and highly error-prone. Job seekers often miss critical semantic keywords that ATS systems screen for, or they end up sending a single generic resume to hundreds of roles, resulting in automated rejections. Because of the volume of applications required in today's job market, manually custom-crafting a resume and cover letter for every single application takes hours per day, leading to candidate burnout and suboptimal matching.
 
-### 3. Current User Workflow Diagram
+### 3. User Workflow Diagram
 ```mermaid
 graph TD
     A[Start: Find Job Posting] --> B[Open Resume Side-by-Side]
